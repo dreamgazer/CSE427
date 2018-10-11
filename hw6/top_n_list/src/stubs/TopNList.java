@@ -1,0 +1,82 @@
+package stubs;
+
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+public class TopNList extends Configured implements Tool {
+	public static void main(String[] args) throws Exception {
+		  
+		  int res = ToolRunner.run(new Configuration(), new TopNList(), args);
+
+	      System.exit(res);
+
+	  }
+
+	@Override
+	public int run(String[] args) throws Exception {
+		 Configuration conf = getConf();
+
+		 String Job1_OutputPath = "/home/cloudera/workspace/top_n_list/output/aggregate/";
+		 conf.get("N");
+		if (args.length != 2) {
+		  System.out.printf("Usage: TopNList D=<N most popular movies> <input dir> <output dir>\n");
+		  System.exit(-1);
+		}
+		
+		Job job1 = new Job(conf);
+		
+		job1.setJarByClass(TopNList.class);
+		
+		job1.setJobName("AggregateTheRate");
+		FileInputFormat.setInputPaths(job1, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job1, new Path(Job1_OutputPath));
+		
+		job1.setMapperClass(AggregateMapper.class);
+		job1.setReducerClass(AggregateReducer.class);
+		
+		
+		job1.setOutputKeyClass(IntWritable.class);
+		job1.setOutputValueClass(IntWritable.class);
+		
+		
+		Job job2 = new Job(conf);
+		
+		FileInputFormat.addInputPath(job2, new Path(Job1_OutputPath));//job1's output file is job2's input file 
+		FileOutputFormat.setOutputPath(job2, new Path(args[1]));
+		
+		job2.setJarByClass(TopNList.class);
+		
+		job2.setJobName("TopNList");
+		
+		
+		job2.setMapperClass(TopNListMapper.class);
+		job2.setReducerClass(TopNListReducer.class);
+		
+		job2.setMapOutputKeyClass(NullWritable.class);
+	    job2.setMapOutputValueClass(Text.class);
+		job2.setOutputKeyClass(IntWritable.class);
+		job2.setOutputValueClass(Text.class);
+		
+		
+		
+		
+		
+		boolean job1_success = job1.waitForCompletion(true);
+		// job2 waiting for job1 to be finished
+		if(job1_success) System.exit(job2.waitForCompletion(true) ? 0 : 1);
+		
+	   	return 0;
+	}
+	
+	
+}
