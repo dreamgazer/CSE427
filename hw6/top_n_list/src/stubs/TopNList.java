@@ -26,11 +26,12 @@ public class TopNList extends Configured implements Tool {
 	public int run(String[] args) throws Exception {
 		 Configuration conf = getConf();
 
-		 String Job1_OutputPath = "/home/cloudera/workspace/top_n_list/output/aggregate/";
+		 String Job1_OutputPath = "aggregate/";
 		 conf.get("N");
-		if (args.length != 2) {
-		  System.out.printf("Usage: TopNList D=<N most popular movies> <input dir> <output dir>\n");
-		  System.exit(-1);
+		 conf.set("fileNamesPath","hdfs://quickstart.cloudera:8020/user/cloudera/movie_titles.txt");
+		 if (args.length != 2) {
+		     System.out.printf("Usage: -D N=<N most popular movies> <input dir> <output dir>\n");
+	        System.exit(-1);
 		}
 		
 		Job job1 = new Job(conf);

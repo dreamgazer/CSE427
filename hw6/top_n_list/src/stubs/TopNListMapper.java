@@ -26,7 +26,6 @@ public class TopNListMapper extends Mapper<LongWritable, Text, NullWritable, Tex
 	
 	public void map(LongWritable key, Text value, Context context){
 		String line = value.toString();
-		System.out.println("line:"+line);
 	  	int  rate = Integer.parseInt(line.split("\\s+")[1]);
 	  	int film_id = Integer.parseInt(line.split("\\s+")[0]);
 	  	topNItems.put(rate, film_id);
