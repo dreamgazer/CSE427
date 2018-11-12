@@ -10,14 +10,13 @@ if __name__ == "__main__":
 	sconf = SparkConf().setAppName("CountJPGS").set("spark.ui.port","4141")
         sc = SparkContext(conf=sconf)
 
-	data = sc.wholeTextFiles(sys.argv[1]) \
-		.flatMap(lambda line:line[1].split("\n")) \
-		.filter(lambda line: len(line)>0 and line.split(" ")[6].split(".")[1] == "jpg") \
+	data = sc.textFile(sys.argv[1],1) \
+		.filter(lambda line: ".jpg" in line) \
 		.map(lambda line:("jpg",1)) \
 		.reduceByKey(lambda v1,v2: v1+v2)
 
 
-	data.saveAsTextFile("out_spark_jpgc");
+	print(data.take(1))
 
 	sc.stop()
   
